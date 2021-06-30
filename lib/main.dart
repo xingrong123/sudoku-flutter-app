@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'myAppBar.dart';
 import 'homePage.dart';
+import 'sudoku/sudoku.dart';
 
 void main() => runApp(MyApp());
 
@@ -19,9 +20,7 @@ class _MyAppState extends State<MyApp> {
       title: "Sudoku App",
       home: Scaffold(
         appBar: MyAppBar(),
-        body: Center(
-          child: HomePage(),
-        ),
+        body: Sudoku(),
       ),
     );
   }
