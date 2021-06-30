@@ -18,10 +18,11 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: "Sudoku App",
-      home: Scaffold(
-        appBar: MyAppBar(),
-        body: Sudoku(),
-      ),
+      initialRoute: '/',
+      routes: {
+        '/': (context) => HomePage(),
+        '/sudoku': (context) => Sudoku(),
+      },
     );
   }
 }

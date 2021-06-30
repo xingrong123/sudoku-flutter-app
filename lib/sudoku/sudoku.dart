@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../myAppBar.dart';
 import 'game.dart';
 import 'controls.dart';
 
@@ -45,13 +46,29 @@ class _SudokuState extends State<Sudoku> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Text("Puzzle 1",textAlign: TextAlign.center, style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),),
-        Game(selectedSquare: _selectedSquare, setSelectedSquare: _setSelectedSquare, puzzleArray: _puzzleArray,),
-        Text("selected square is " + _selectedSquare.toString(), textAlign: TextAlign.center, style: TextStyle(fontSize: 24),),
-        Controls(controlHandler: _controlHandler,),
-      ],
-    );
+    return Scaffold(
+        appBar: MyAppBar(),
+        body: Column(
+          children: [
+            Text(
+              "Puzzle 1",
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+            ),
+            Game(
+              selectedSquare: _selectedSquare,
+              setSelectedSquare: _setSelectedSquare,
+              puzzleArray: _puzzleArray,
+            ),
+            Text(
+              "selected square is " + _selectedSquare.toString(),
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 24),
+            ),
+            Controls(
+              controlHandler: _controlHandler,
+            ),
+          ],
+        ));
   }
 }
