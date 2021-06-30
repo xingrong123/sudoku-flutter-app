@@ -7,7 +7,8 @@ class MyAppBar extends StatelessWidget implements PreferredSizeWidget{
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      title: Text("something"),
+      title: Text("Sudoku", style: TextStyle(fontSize: 24, fontFamily: "Times New Roman",),),
+      centerTitle: true,
     );
   }
 }

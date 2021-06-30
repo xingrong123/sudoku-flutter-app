@@ -1,9 +1,17 @@
 import 'package:flutter/material.dart';
 
 class Game extends StatelessWidget {
-  final int _selectedSquare;
-  final Function setSelectedSquare;
-  Game(this._selectedSquare, this.setSelectedSquare);
+  int _selectedSquare = -1;
+  Function _setSelectedSquare = () {};
+  List _puzzleArray = [];
+  Game(
+      {required int selectedSquare,
+      required Function setSelectedSquare,
+      required List puzzleArray}) {
+    _selectedSquare = selectedSquare;
+    _setSelectedSquare = setSelectedSquare;
+    _puzzleArray = puzzleArray;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +25,7 @@ class Game extends StatelessWidget {
           height: _boxSize,
           child: Center(
             child: Text(
-              "1",
+              _puzzleArray[index] == null ? "" : _puzzleArray[index].toString(),
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 24,
@@ -31,7 +39,7 @@ class Game extends StatelessWidget {
             color: _selectedSquare == index ? Colors.yellow : Colors.white,
           ),
         ),
-        onTap: () => setSelectedSquare(index),
+        onTap: () => _setSelectedSquare(index),
       );
     }
 
