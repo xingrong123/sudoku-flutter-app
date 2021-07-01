@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 
-import 'myAppBar.dart';
-import 'homePage.dart';
-import 'sudoku/sudoku.dart';
+import 'components/homePage.dart';
+import 'components/sudoku/sudoku.dart';
 
 void main() => runApp(MyApp());
 
@@ -20,8 +19,8 @@ class _MyAppState extends State<MyApp> {
       title: "Sudoku App",
       initialRoute: '/',
       routes: {
-        '/': (context) => HomePage(),
-        '/sudoku': (context) => Sudoku(),
+        HomePage.routeName: (context) => HomePage(),
+        Sudoku.routeName: (context) => Sudoku(),
       },
     );
   }

@@ -4,13 +4,16 @@ class Game extends StatelessWidget {
   int _selectedSquare = -1;
   Function _setSelectedSquare = () {};
   List _puzzleArray = [];
+  List _puzzleIndex = [];
   Game(
       {required int selectedSquare,
       required Function setSelectedSquare,
-      required List puzzleArray}) {
+      required List puzzleArray,
+      required List puzzleIndex}) {
     _selectedSquare = selectedSquare;
     _setSelectedSquare = setSelectedSquare;
     _puzzleArray = puzzleArray;
+    _puzzleIndex = puzzleIndex;
   }
 
   @override
@@ -19,6 +22,11 @@ class Game extends StatelessWidget {
 
     Widget _square(int index) {
       final _boxSize = _width / 9 - 5;
+      final squareColor = _puzzleIndex.contains(index)
+          ? Colors.black26
+          : _selectedSquare == index
+              ? Colors.yellow
+              : Colors.white;
       return GestureDetector(
         child: Container(
           width: _boxSize,
@@ -36,7 +44,7 @@ class Game extends StatelessWidget {
           margin: const EdgeInsets.all(0),
           decoration: BoxDecoration(
             border: Border.all(color: Colors.black12),
-            color: _selectedSquare == index ? Colors.yellow : Colors.white,
+            color: squareColor,
           ),
         ),
         onTap: () => _setSelectedSquare(index),
