@@ -6,8 +6,7 @@ import '../utils/sudokuApi.dart';
 import '../utils/jsonObj.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({Key? key}) : super(key: key);
-  static const routeName = '/';
+  static const routeName = '/homepage';
 
   @override
   _HomePageState createState() => _HomePageState();
@@ -22,7 +21,7 @@ class _HomePageState extends State<HomePage> {
       child: Center(
         child: Text(
           value,
-          style: TextStyle(fontSize: 20),
+          style: TextStyle(fontSize: 20, color: Colors.white),
           textAlign: TextAlign.center,
         ),
       ),
@@ -42,7 +41,9 @@ class _HomePageState extends State<HomePage> {
   }
 
   _onPressed(puzzleId) {
-    final props = {"puzzleId": puzzleId,};
+    final props = {
+      "puzzleId": puzzleId,
+    };
     Navigator.pushNamed(context, '/sudoku', arguments: ScreenArguments(props));
   }
 
@@ -55,39 +56,43 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: MyAppBar(),
-        body: FutureBuilder<JsonObj>(
-          future: futurePuzzlesCount,
-          builder: (context, snapshot) {
-            if (snapshot.hasData) {
-              puzzlesCount = snapshot.data!.data["puzzles"];
-              return Column(
-                children: [
-                  Container(
-                    child:
-                        Text("Select puzzle", style: TextStyle(fontSize: 24)),
-                    margin: EdgeInsets.all(16),
-                  ),
-                  _createTable(),
-                  Expanded(
-                    child: PuzzleList(puzzlesCount, _onPressed),
-                  ),
-                ],
-              );
-            } else if (snapshot.hasError) {
-              return Text("${snapshot.error}");
-            }
-            // By default, show a loading spinner.
-            return Center(child: CircularProgressIndicator(),);
-          },
-        ));
+      appBar: MyAppBar(),
+      body: FutureBuilder<JsonObj>(
+        future: futurePuzzlesCount,
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            puzzlesCount = snapshot.data!.data["puzzles"];
+            return Column(
+              children: [
+                Container(
+                  child: Text("Select puzzle", style: TextStyle(fontSize: 24, color: Colors.white)),
+                  margin: EdgeInsets.all(16),
+                ),
+                //_createTable(),
+                Expanded(
+                  child: PuzzleList(puzzlesCount, _onPressed),
+                ),
+              ],
+            );
+          } else if (snapshot.hasError) {
+            return Text("${snapshot.error}");
+          }
+          // By default, show a loading spinner.
+          return Center(
+            child: CircularProgressIndicator(),
+          );
+        },
+      ),
+      backgroundColor: Color(0xff272537),
+    );
   }
 }
 
 class PuzzleList extends StatelessWidget {
   final List _puzzlesCount;
   final Function _onPressed;
-  final TextStyle bigFont = TextStyle(fontSize: 20);
+  final TextStyle bigFont = TextStyle(fontSize: 20, color: Colors.white);
+  final TextStyle bigFont2 = TextStyle(fontSize: 16, color: Colors.white);
 
   PuzzleList(this._puzzlesCount, this._onPressed);
 
@@ -96,8 +101,8 @@ class PuzzleList extends StatelessWidget {
       leading: Text(something["puzzle_id"].toString(), style: bigFont),
       title: Text(something["difficulty"], style: bigFont),
       subtitle: Text(
-        "something else",
-        style: bigFont,
+        "something",
+        style: bigFont2,
       ),
       dense: true,
       onTap: () {
@@ -114,6 +119,7 @@ class PuzzleList extends StatelessWidget {
         if (i.isOdd)
           return const Divider(
             thickness: 1,
+            color: Colors.white10,
           );
 
         final index = i ~/ 2;

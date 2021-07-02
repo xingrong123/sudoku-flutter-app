@@ -131,12 +131,19 @@ class _SudokuState extends State<Sudoku> {
                     textAlign: TextAlign.center,
                     style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
                   ),
+                  Text(
+                    "Difficulty: " + _difficulty,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 16),
+                  ),
+                  SizedBox(height: 10),
                   Game(
                     selectedSquare: _selectedSquare,
                     setSelectedSquare: _setSelectedSquare,
                     puzzleArray: _squares,
                     puzzleIndex: _puzzleIndex,
                   ),
+                  SizedBox(height: 30),
                   Controls(
                     controlHandler: _controlHandler,
                   ),

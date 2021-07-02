@@ -1,20 +1,15 @@
 import 'package:flutter/material.dart';
 
 class Game extends StatelessWidget {
-  int _selectedSquare = -1;
-  Function _setSelectedSquare = () {};
-  List _puzzleArray = [];
-  List _puzzleIndex = [];
+  final int selectedSquare;
+  final Function setSelectedSquare;
+  final List puzzleArray;
+  final List puzzleIndex;
   Game(
-      {required int selectedSquare,
-      required Function setSelectedSquare,
-      required List puzzleArray,
-      required List puzzleIndex}) {
-    _selectedSquare = selectedSquare;
-    _setSelectedSquare = setSelectedSquare;
-    _puzzleArray = puzzleArray;
-    _puzzleIndex = puzzleIndex;
-  }
+      {required this.selectedSquare,
+      required this.setSelectedSquare,
+      required this.puzzleArray,
+      required this.puzzleIndex});
 
   @override
   Widget build(BuildContext context) {
@@ -22,9 +17,9 @@ class Game extends StatelessWidget {
 
     Widget _square(int index) {
       final _boxSize = _width / 9 - 5;
-      final squareColor = _puzzleIndex.contains(index)
+      final squareColor = puzzleIndex.contains(index)
           ? Colors.black26
-          : _selectedSquare == index
+          : selectedSquare == index
               ? Colors.yellow
               : Colors.white;
       return GestureDetector(
@@ -33,7 +28,7 @@ class Game extends StatelessWidget {
           height: _boxSize,
           child: Center(
             child: Text(
-              _puzzleArray[index] == null ? "" : _puzzleArray[index].toString(),
+              puzzleArray[index] == null ? "" : puzzleArray[index].toString(),
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 24,
@@ -47,7 +42,7 @@ class Game extends StatelessWidget {
             color: squareColor,
           ),
         ),
-        onTap: () => _setSelectedSquare(index),
+        onTap: () => setSelectedSquare(index),
       );
     }
 

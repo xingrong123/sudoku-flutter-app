@@ -9,6 +9,7 @@ class MyAppBar extends StatelessWidget implements PreferredSizeWidget{
     return AppBar(
       title: Text("Sudoku", style: TextStyle(fontSize: 24, fontFamily: "Times New Roman",),),
       centerTitle: true,
+      backgroundColor: Colors.black45,
     );
   }
 }
