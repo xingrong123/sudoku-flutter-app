@@ -18,7 +18,7 @@ class _SudokuState extends State<Sudoku> {
   List _squares = [];
   int _selectedSquare = -1;
   List _puzzleIndex = [];
-  bool win = false;
+  bool _win = false;
   var history = [
     {
       "square": null,
@@ -44,16 +44,46 @@ class _SudokuState extends State<Sudoku> {
   String _difficulty = "";
   late Future<JsonObj> futurePuzzleDetails;
 
+  bool _checkWin() {
+    List<List> check = [];
+    for (int i = 0; i < 9; i++) {
+      check.add(_squares.sublist(i * 9, i * 9 + 9));
+    }
+    for (int i = 0; i < 9; i++) {
+      List array = [];
+      for (int j = 0; j < 9; j++) {
+        array.add(_squares[j * 9 + i]);
+      }
+      check.add(array);
+    }
+    for (int i = 0; i < 3; i++) {
+      for (int j = 0; j < 3; j++) {
+        List array = [];
+        for (int k = 0; k < 3; k++) {
+          for (int m = 0; m < 3; m++) {
+            int index = (i * 3 + k) * 9 + (j * 3 + m);
+            array.add(_squares[index]);
+          }
+        }
+        check.add(array);
+      }
+    }
+    for (int i = 0; i < check.length; i++) {
+      for (int j = 1; j <= 9; j++) {
+        if (!check[i].contains(j)) return false;
+      }
+    }
+    return true;
+  }
+
   _deselectSquare() {
     setState(() {
       _selectedSquare = -1;
     });
   }
 
-
-
   _setSelectedSquare(i) {
-    if (_puzzleIndex.contains(i)) {
+    if (_puzzleIndex.contains(i) || _win) {
       _deselectSquare();
     } else {
       setState(() {
@@ -67,6 +97,13 @@ class _SudokuState extends State<Sudoku> {
     setState(() {
       _squares[_selectedSquare] = value;
     });
+    bool winState = _checkWin();
+    if (winState) {
+      setState(() {
+        _win = true;
+        _selectedSquare = -1;
+      });
+    }
   }
 
   _controlHandler(value) {
@@ -109,6 +146,15 @@ class _SudokuState extends State<Sudoku> {
     _initialized2 = true;
   }
 
+  _winStatement() {
+    if (!_win) return SizedBox.shrink();
+    return Text(
+      "You Win!!",
+      textAlign: TextAlign.center,
+      style: TextStyle(fontSize: 24),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final args = ModalRoute.of(context)!.settings.arguments as ScreenArguments;
@@ -136,6 +182,8 @@ class _SudokuState extends State<Sudoku> {
                     textAlign: TextAlign.center,
                     style: TextStyle(fontSize: 16),
                   ),
+                  SizedBox(height: (_win ? 10 : 0)),
+                  _winStatement(),
                   SizedBox(height: 10),
                   Game(
                     selectedSquare: _selectedSquare,
