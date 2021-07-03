@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 
 import 'components/homePage.dart';
 import 'components/sudoku/sudoku.dart';
-import './components/startPage.dart';
+import 'components/startPage.dart';
+import 'components/loginPage.dart';
 
 void main() => runApp(MyApp());
 
@@ -21,6 +22,7 @@ class _MyAppState extends State<MyApp> {
       initialRoute: '/',
       routes: {
         StartPage.routeName: (context) => StartPage(),
+        LoginPage.routeName: (context) => LoginPage(),
         HomePage.routeName: (context) => HomePage(),
         Sudoku.routeName: (context) => Sudoku(),
       },

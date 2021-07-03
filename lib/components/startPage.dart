@@ -5,7 +5,15 @@ class StartPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    _onPressed() {
+
+    _onPressedLogin() {
+      Navigator.pushNamed(
+        context,
+        '/login',
+      );
+    }
+
+    _onPressedSkip() {
       Navigator.pushNamed(
         context,
         '/homepage',
@@ -19,7 +27,19 @@ class StartPage extends StatelessWidget {
             Text("Welcome", style: TextStyle(color: Colors.white, fontSize: 32)),
             SizedBox(height: 30),
             ElevatedButton(
-              onPressed: () => _onPressed(),
+              onPressed: () => _onPressedLogin(),
+              child: Container(
+                child: Center(child: Text("login", style: TextStyle(color: Colors.white, fontSize: 20), textAlign: TextAlign.center),), 
+                height: 40,
+                width: 60,
+              ),
+              style: ElevatedButton.styleFrom(
+                primary: Colors.black45,
+              ),
+            ),
+            SizedBox(height: 30),
+            ElevatedButton(
+              onPressed: () => _onPressedSkip(),
               child: Container(
                 child: Center(child: Text("skip", style: TextStyle(color: Colors.white, fontSize: 20), textAlign: TextAlign.center),), 
                 height: 40,

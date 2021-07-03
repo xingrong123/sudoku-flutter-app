@@ -4,12 +4,13 @@ import 'dart:convert';
 import 'jsonObj.dart';
 import 'myCookie.dart';
 
-class SudokuApi {
-  static final String _baseUrl = 'http://sudoku-react-application.herokuapp.com/api';
+class AuthApi {
+  static final String _baseUrl = 'http://sudoku-react-application.herokuapp.com/auth';
 
-  static Future<JsonObj> getRequest(string) async {
-    final res =
-        await http.get(Uri.parse(_baseUrl + string), headers: MyCookie.headers);
+  static Future<JsonObj> postRequest(string, dynamic body) async {
+    final res = await http.post(Uri.parse(_baseUrl + string),
+        headers: MyCookie.headers,
+        body: jsonEncode(body));
     MyCookie.update(res);
 
     if (res.statusCode == 200) {
