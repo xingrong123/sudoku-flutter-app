@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:sudoku_app/utils/myCookie.dart';
 import 'package:sudoku_app/utils/screenArguments.dart';
 
 import 'myAppBar.dart';
 import '../utils/sudokuApi.dart';
 import '../utils/jsonObj.dart';
+import '../utils/authentication.dart';
+import '../utils/authApi.dart';
 
 class HomePage extends StatefulWidget {
   static const routeName = '/homepage';
@@ -16,6 +19,62 @@ class _HomePageState extends State<HomePage> {
   List puzzlesCount = [];
   late Future<JsonObj> futurePuzzlesCount;
 
+  Future<bool> _onBackPressed() async {
+    _logout() {
+      () async {
+        try {
+          await AuthApi.deleteRequest("/logout");
+        } catch (e) {
+          print("error: " + e.toString());
+        }
+      }();
+      Authentication.isAuthenticated = false;
+      Navigator.of(context).pop(true);
+    }
+
+    return await showDialog(
+          context: context,
+          builder: (context) => new AlertDialog(
+            title: Text(MyCookie.getUsername(), style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                        )),
+            content: new Text('Do you want to logout', style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                        )),
+            actions: <Widget>[
+              GestureDetector(
+                onTap: () => Navigator.of(context).pop(false),
+                child: Container(
+                    child: Text("NO",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                        )),
+                    color: Colors.black45,
+                    padding: EdgeInsets.all(5)),
+              ),
+              SizedBox(width: 10),
+              new GestureDetector(
+                onTap: () => _logout(),
+                child: Container(
+                    child: Text("LOGOUT", 
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                        )),
+                    color: Colors.black45,
+                    padding: EdgeInsets.all(5)),
+              ),
+            ],
+            backgroundColor: Color(0xff272537),
+            
+          ),
+        ) ??
+        false;
+  }
+
   Widget _tableElementText(String value) {
     return (Container(
       child: Center(
@@ -27,17 +86,6 @@ class _HomePageState extends State<HomePage> {
       ),
       height: 40,
     ));
-  }
-
-  Widget _createTable() {
-    List<Widget> array2 = [];
-    array2.add(_tableElementText("ID"));
-    array2.add(_tableElementText("Difficulty"));
-    array2.add(_tableElementText("Play"));
-
-    return (Table(border: TableBorder.all(color: Colors.black38), children: [
-      TableRow(children: array2),
-    ]));
   }
 
   _onPressed(puzzleId) {
@@ -55,35 +103,39 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: MyAppBar(),
-      body: FutureBuilder<JsonObj>(
-        future: futurePuzzlesCount,
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            puzzlesCount = snapshot.data!.data["puzzles"];
-            return Column(
-              children: [
-                Container(
-                  child: Text("Select puzzle", style: TextStyle(fontSize: 24, color: Colors.white)),
-                  margin: EdgeInsets.all(16),
-                ),
-                //_createTable(),
-                Expanded(
-                  child: PuzzleList(puzzlesCount, _onPressed),
-                ),
-              ],
+    return WillPopScope(
+      onWillPop: Authentication.isAuthenticated ? _onBackPressed : null,
+      child: new Scaffold(
+        appBar: MyAppBar(),
+        body: FutureBuilder<JsonObj>(
+          future: futurePuzzlesCount,
+          builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              puzzlesCount = snapshot.data!.data["puzzles"];
+              return Column(
+                children: [
+                  Container(
+                    child: Text("Select puzzle",
+                        style: TextStyle(fontSize: 24, color: Colors.white)),
+                    margin: EdgeInsets.all(16),
+                  ),
+                  //_createTable(),
+                  Expanded(
+                    child: PuzzleList(puzzlesCount, _onPressed),
+                  ),
+                ],
+              );
+            } else if (snapshot.hasError) {
+              return Text("${snapshot.error}");
+            }
+            // By default, show a loading spinner.
+            return Center(
+              child: CircularProgressIndicator(),
             );
-          } else if (snapshot.hasError) {
-            return Text("${snapshot.error}");
-          }
-          // By default, show a loading spinner.
-          return Center(
-            child: CircularProgressIndicator(),
-          );
-        },
+          },
+        ),
+        backgroundColor: Color(0xff272537),
       ),
-      backgroundColor: Color(0xff272537),
     );
   }
 }

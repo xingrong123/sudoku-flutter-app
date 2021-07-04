@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:sudoku_app/main.dart';
 
 import 'myAppBar.dart';
 import '../utils/authApi.dart';
+import '../utils/authentication.dart';
 
 class LoginPage extends StatefulWidget {
   static const routeName = '/login';
@@ -23,6 +23,35 @@ class _LoginPageState extends State<LoginPage> {
     myUsernameController.dispose();
     myPasswordController.dispose();
     super.dispose();
+  }
+
+  void _onPressHandler() async {
+    if (_formKey.currentState!.validate()) {
+      setState(() {
+        _enabled = false;
+      });
+      // If the form is valid, display a snackbar. In the real world,
+      // you'd often call a server or save the information in a database.
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Processing Data'), duration: Duration(minutes: 1),));
+      final body = {
+        'username': myUsernameController.text,
+        'password': myPasswordController.text
+      };
+      try {
+        final response = await AuthApi.postRequest("/login", body);
+        print(response.data);
+        Authentication.isAuthenticated = true;
+        Navigator.pop(context);
+        Navigator.pushNamed(
+          context,
+          '/homepage',
+        );
+      } catch (e) {
+        print(e);
+      }
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    }
   }
 
   @override
@@ -86,23 +115,7 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 SizedBox(height: 30),
                 ElevatedButton(
-                  onPressed: () {
-                    // Validate returns true if the form is valid, or false otherwise.
-                    if (_formKey.currentState!.validate()) {
-                      setState(() {
-                        _enabled = false;
-                      });
-                      // If the form is valid, display a snackbar. In the real world,
-                      // you'd often call a server or save the information in a database.
-                      ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Processing Data')));
-                      final body = {
-                        "username": myUsernameController.text,
-                        "password": myPasswordController.text
-                      };
-                      AuthApi.postRequest("/login", body);
-                    }
-                  },
+                  onPressed: _enabled ? () => _onPressHandler() : null,
                   child: Text('Submit'),
                 )
               ],
