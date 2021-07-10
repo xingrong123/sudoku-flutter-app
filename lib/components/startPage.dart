@@ -5,6 +5,12 @@ class StartPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    _onPressedRegister() {
+      Navigator.pushNamed(
+        context,
+        '/register',
+      );
+    }
 
     _onPressedLogin() {
       Navigator.pushNamed(
@@ -24,14 +30,35 @@ class StartPage extends StatelessWidget {
       body: Center(
         child: Column(
           children: [
-            Text("Welcome", style: TextStyle(color: Colors.white, fontSize: 32)),
+            Text("Welcome",
+                style: TextStyle(color: Colors.white, fontSize: 32)),
+            SizedBox(height: 30),
+            ElevatedButton(
+              onPressed: () => _onPressedRegister(),
+              child: Container(
+                child: Center(
+                  child: Text("register",
+                      style: TextStyle(color: Colors.white, fontSize: 20),
+                      textAlign: TextAlign.center),
+                ),
+                height: 40,
+                width: 80,
+              ),
+              style: ElevatedButton.styleFrom(
+                primary: Colors.black45,
+              ),
+            ),
             SizedBox(height: 30),
             ElevatedButton(
               onPressed: () => _onPressedLogin(),
               child: Container(
-                child: Center(child: Text("login", style: TextStyle(color: Colors.white, fontSize: 20), textAlign: TextAlign.center),), 
+                child: Center(
+                  child: Text("login",
+                      style: TextStyle(color: Colors.white, fontSize: 20),
+                      textAlign: TextAlign.center),
+                ),
                 height: 40,
-                width: 60,
+                width: 80,
               ),
               style: ElevatedButton.styleFrom(
                 primary: Colors.black45,
@@ -41,9 +68,13 @@ class StartPage extends StatelessWidget {
             ElevatedButton(
               onPressed: () => _onPressedSkip(),
               child: Container(
-                child: Center(child: Text("skip", style: TextStyle(color: Colors.white, fontSize: 20), textAlign: TextAlign.center),), 
+                child: Center(
+                  child: Text("skip",
+                      style: TextStyle(color: Colors.white, fontSize: 20),
+                      textAlign: TextAlign.center),
+                ),
                 height: 40,
-                width: 60,
+                width: 80,
               ),
               style: ElevatedButton.styleFrom(
                 primary: Colors.black45,

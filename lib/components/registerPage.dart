@@ -4,19 +4,18 @@ import 'myAppBar.dart';
 import '../utils/authApi.dart';
 import '../utils/authentication.dart';
 
-class LoginPage extends StatefulWidget {
-  static const routeName = '/login';
+class RegisterPage extends StatefulWidget {
+  static const routeName = '/register';
 
   @override
-  _LoginPageState createState() => _LoginPageState();
+  _RegisterPageState createState() => _RegisterPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _RegisterPageState extends State<RegisterPage> {
   final _formKey = GlobalKey<FormState>();
   final myUsernameController = TextEditingController();
   final myPasswordController = TextEditingController();
   bool _enabled = true;
-  bool _invalidLoginCredentials = false;
 
   @override
   void dispose() {
@@ -42,9 +41,8 @@ class _LoginPageState extends State<LoginPage> {
     };
 
     try {
-      final response = await AuthApi.postRequest("/login", body);
+      final response = await AuthApi.postRequest("/register", body);
       print(response.data);
-      _invalidLoginCredentials = false;
       Authentication.isAuthenticated = true;
       Navigator.pop(context);
       Navigator.pushNamed(
@@ -53,9 +51,6 @@ class _LoginPageState extends State<LoginPage> {
       );
     } catch (e) {
       print(e.toString());
-      setState(() {
-        _invalidLoginCredentials = true;
-      });
     }
 
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
@@ -80,8 +75,6 @@ class _LoginPageState extends State<LoginPage> {
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Please enter username';
-                      } else if (_invalidLoginCredentials) {
-                        return 'Invalid username or password';
                       }
                       return null;
                     },
@@ -106,8 +99,6 @@ class _LoginPageState extends State<LoginPage> {
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Please enter password';
-                      } else if (_invalidLoginCredentials) {
-                        return 'Invalid username or password';
                       }
                       return null;
                     },
