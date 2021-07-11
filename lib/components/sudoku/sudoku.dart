@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'dart:async';
 
 import '../myAppBar.dart';
 import 'game.dart';
@@ -19,14 +22,14 @@ class _SudokuState extends State<Sudoku> {
   int _selectedSquare = -1;
   List _puzzleIndex = [];
   bool _win = false;
-  var history = [
+  List<Map<String, dynamic>> _history = [
     {
       "square": null,
       "move": null,
       "previousState": null,
     }
   ];
-  int move = 0;
+  int _move = 0;
   var startTime = {
     "hours": 0,
     "minutes": 0,
@@ -43,6 +46,26 @@ class _SudokuState extends State<Sudoku> {
   int _puzzleId = 0;
   String _difficulty = "";
   late Future<JsonObj> futurePuzzleDetails;
+  int _startTimeInSeconds = 0;
+  late Stopwatch _stopwatch;
+  late Timer _timer;
+
+  int _calculateTimeInSecondsFromStringFormat(String time) {
+    print(time);
+    final timeArray = time.split(":");
+    int timeInSeconds = int.parse(timeArray[0]) * 3600 +
+        int.parse(timeArray[1]) * 60 +
+        int.parse(timeArray[2]);
+    return timeInSeconds;
+  }
+
+  String formatTime(int milliseconds) {
+    var secs = milliseconds ~/ 1000 + _startTimeInSeconds;
+    var hours = (secs ~/ 3600).toString().padLeft(2, '0');
+    var minutes = ((secs % 3600) ~/ 60).toString().padLeft(2, '0');
+    var seconds = (secs % 60).toString().padLeft(2, '0');
+    return "$hours:$minutes:$seconds";
+  }
 
   bool _checkWin() {
     List<List> check = [];
@@ -92,18 +115,101 @@ class _SudokuState extends State<Sudoku> {
     }
   }
 
+  _saveWinDetails() {
+    final body = {
+      "puzzle_id": _puzzleId,
+      "time_spent": formatTime(_stopwatch.elapsedMilliseconds)
+    };
+    SudokuApi.postRequest("/win", body).then((res) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('Saved win details'),
+        duration: Duration(seconds: 5),
+      ));
+    }).catchError((error) {
+      print(error.toString());
+    });
+  }
+
+  _updateHistory(value) {
+    _history.add({
+      "square": _selectedSquare,
+      "move": value,
+      "previousState": _squares[_selectedSquare]
+    });
+  }
+
   _numberTap(value) {
     if (_selectedSquare == -1) return;
-    setState(() {
-      _squares[_selectedSquare] = value;
-    });
+    _move++;
+    _updateHistory(value);
+    _squares[_selectedSquare] = value;
     bool winState = _checkWin();
     if (winState) {
-      setState(() {
-        _win = true;
+      if (_win == false) {
+        _stopwatch.stop();
+        _saveWinDetails();
         _selectedSquare = -1;
-      });
+      }
+      _win = true;
+    } else {
+      _win = false;
     }
+    setState(() {});
+  }
+
+  void _save() {
+    final something = formatTime(_stopwatch.elapsedMilliseconds);
+    print(something);
+    final body = {
+      "puzzle_id": _puzzleId,
+      "moves": _move,
+      "squares": [..._squares],
+      "history": [..._history],
+      "time_spent": something
+    };
+    SudokuApi.postRequest("/save", body).then((res) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('Saved successfully'),
+        duration: Duration(seconds: 5),
+      ));
+    }).catchError((error) {
+      print(error.toString());
+    });
+  }
+
+  void _load() {
+    final body = {"puzzle_id": _puzzleId};
+    SudokuApi.postRequest("/load", body).then((res) {
+      List<Map<String, dynamic>> historyList =
+          (jsonDecode(jsonEncode(res.data[0]["history"])) as List)
+              .map((e) => e as Map<String, dynamic>)
+              .toList();
+      setState(() {
+        _squares = res.data[0]["squares"];
+        _move = res.data[0]["moves"];
+        _history = historyList;
+        _startTimeInSeconds =
+            _calculateTimeInSecondsFromStringFormat(res.data[0]["time_spent"]);
+      });
+      print(_startTimeInSeconds);
+      _stopwatch.reset();
+      print("loaded successfully");
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('Loaded successfully'),
+        duration: Duration(seconds: 3),
+      ));
+    }).catchError((error) {
+      print(error.toString());
+    });
+  }
+
+  _clearSquare() {
+    // no point clearing an empty square
+    if (_squares[_selectedSquare] == null) return;
+    _updateHistory(null);
+    _move++;
+    _squares[_selectedSquare] = null;
+    setState(() {});
   }
 
   _controlHandler(value) {
@@ -118,6 +224,15 @@ class _SudokuState extends State<Sudoku> {
       case 8:
       case 9:
         _numberTap(value);
+        break;
+      case "save":
+        _save();
+        break;
+      case "load":
+        _load();
+        break;
+      case "clear":
+        _clearSquare();
         break;
       default:
     }
@@ -156,6 +271,22 @@ class _SudokuState extends State<Sudoku> {
   }
 
   @override
+  void dispose() {
+    _timer.cancel();
+    super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _stopwatch = Stopwatch()..start();
+    // re-render every 30ms
+    _timer = new Timer.periodic(new Duration(milliseconds: 30), (timer) {
+      setState(() {});
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final args = ModalRoute.of(context)!.settings.arguments as ScreenArguments;
     if (_initialized == false) _initalize(args.props);
@@ -170,32 +301,45 @@ class _SudokuState extends State<Sudoku> {
               if (_initialized2 == false) {
                 _setFetchedData(data);
               }
-              return Column(
-                children: [
-                  Text(
-                    "Puzzle " + _puzzleId.toString(),
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
-                  ),
-                  Text(
-                    "Difficulty: " + _difficulty,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 16),
-                  ),
-                  SizedBox(height: (_win ? 10 : 0)),
-                  _winStatement(),
-                  SizedBox(height: 10),
-                  Game(
-                    selectedSquare: _selectedSquare,
-                    setSelectedSquare: _setSelectedSquare,
-                    puzzleArray: _squares,
-                    puzzleIndex: _puzzleIndex,
-                  ),
-                  SizedBox(height: 30),
-                  Controls(
-                    controlHandler: _controlHandler,
-                  ),
-                ],
+              return SingleChildScrollView(
+                child: Column(
+                  children: [
+                    Text(
+                      "Puzzle " + _puzzleId.toString(),
+                      textAlign: TextAlign.center,
+                      style:
+                          TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      "Difficulty: " + _difficulty,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 16),
+                    ),
+                    SizedBox(height: (_win ? 10 : 0)),
+                    _winStatement(),
+                    SizedBox(height: 10),
+                    Game(
+                      selectedSquare: _selectedSquare,
+                      setSelectedSquare: _setSelectedSquare,
+                      puzzleArray: _squares,
+                      puzzleIndex: _puzzleIndex,
+                    ),
+                    SizedBox(height: 24),
+                    Controls(
+                      controlHandler: _controlHandler,
+                    ),
+                    SizedBox(height: 24),
+                    Container(
+                      child: Column(
+                        children: [
+                          Text("time:"),
+                          Text(formatTime(_stopwatch.elapsedMilliseconds),
+                              style: TextStyle(fontSize: 36))
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               );
             } else if (snapshot.hasError) {
               return Text("${snapshot.error}");
