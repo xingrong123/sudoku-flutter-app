@@ -4,19 +4,30 @@ import '../../utils/authentication.dart';
 
 class Controls extends StatelessWidget {
   final Function controlHandler;
+  final bool enableUndoBtn;
+  final bool enableRedoBtn;
 
   // Constructor
   Controls({
     required this.controlHandler,
+    required this.enableUndoBtn,
+    required this.enableRedoBtn,
   });
 
   @override
   Widget build(BuildContext context) {
     bool _isEnabled(value) {
-      return (value == "save" || value == "load") &&
-              !Authentication.isAuthenticated
-          ? false
-          : true;
+      if ((value == "save" || value == "load") &&
+          !Authentication.isAuthenticated) {
+        return false;
+      }
+      if (value == "undo" && !enableUndoBtn) {
+        return false;
+      }
+      if (value == "redo" && !enableRedoBtn) {
+        return false;
+      }
+      return true;
     }
 
     Widget getBtn(value) {
@@ -51,12 +62,22 @@ class Controls extends StatelessWidget {
         ));
         array1.add(SizedBox(height: 5));
       }
+      List<Widget> undoRedoAndClearBtns = [
+        getBtn("undo"),
+        SizedBox(width: 5),
+        getBtn("redo"),
+        SizedBox(width: 5),
+        getBtn("clear"),
+      ];
+      array1.add(Row(
+        children: undoRedoAndClearBtns,
+        mainAxisAlignment: MainAxisAlignment.center,
+      ));
+      array1.add(SizedBox(height: 5));
       List<Widget> saveAndLoadBtns = [
         getBtn("save"),
         SizedBox(width: 5),
         getBtn("load"),
-        SizedBox(width: 5),
-        getBtn("clear"),
       ];
       array1.add(Row(
         children: saveAndLoadBtns,

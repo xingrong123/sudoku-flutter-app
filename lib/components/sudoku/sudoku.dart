@@ -130,7 +130,9 @@ class _SudokuState extends State<Sudoku> {
     });
   }
 
-  _updateHistory(value) {
+  _updateHistoryAndMoves(value) {
+    _move++;
+    _history = _history.sublist(0, _move);
     _history.add({
       "square": _selectedSquare,
       "move": value,
@@ -140,19 +142,14 @@ class _SudokuState extends State<Sudoku> {
 
   _numberTap(value) {
     if (_selectedSquare == -1) return;
-    _move++;
-    _updateHistory(value);
+    if (_squares[_selectedSquare] == value) return;
+    _updateHistoryAndMoves(value);
     _squares[_selectedSquare] = value;
-    bool winState = _checkWin();
-    if (winState) {
-      if (_win == false) {
-        _stopwatch.stop();
-        _saveWinDetails();
-        _selectedSquare = -1;
-      }
-      _win = true;
-    } else {
-      _win = false;
+    _win = _checkWin();
+    if (_win && _stopwatch.isRunning) {
+      _stopwatch.stop();
+      _saveWinDetails();
+      _selectedSquare = -1;
     }
     setState(() {});
   }
@@ -184,15 +181,19 @@ class _SudokuState extends State<Sudoku> {
           (jsonDecode(jsonEncode(res.data[0]["history"])) as List)
               .map((e) => e as Map<String, dynamic>)
               .toList();
-      setState(() {
-        _squares = res.data[0]["squares"];
-        _move = res.data[0]["moves"];
-        _history = historyList;
-        _startTimeInSeconds =
-            _calculateTimeInSecondsFromStringFormat(res.data[0]["time_spent"]);
-      });
-      print(_startTimeInSeconds);
+      _squares = res.data[0]["squares"];
+      _move = res.data[0]["moves"];
+      _history = historyList;
+      _startTimeInSeconds =
+          _calculateTimeInSecondsFromStringFormat(res.data[0]["time_spent"]);
+
       _stopwatch.reset();
+      _win = _checkWin();
+      if (_win && _stopwatch.isRunning) {
+        _stopwatch.stop();
+      } else if (!_win && !_stopwatch.isRunning) {
+        _stopwatch.start();
+      }
       print("loaded successfully");
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text('Loaded successfully'),
@@ -201,14 +202,34 @@ class _SudokuState extends State<Sudoku> {
     }).catchError((error) {
       print(error.toString());
     });
+    setState(() {});
   }
 
   _clearSquare() {
     // no point clearing an empty square
     if (_squares[_selectedSquare] == null) return;
-    _updateHistory(null);
-    _move++;
+    _updateHistoryAndMoves(null);
     _squares[_selectedSquare] = null;
+    setState(() {});
+  }
+
+  _undo() {
+    final moveDetails = _history[_move];
+    _squares[moveDetails["square"]] = moveDetails["previousState"];
+    _move--;
+    if (!_squares.contains(null)) {
+      _win = _checkWin();
+    }
+    setState(() {});
+  }
+
+  _redo() {
+    _move++;
+    final moveDetails = _history[_move];
+    _squares[moveDetails["square"]] = moveDetails["move"];
+    if (!_squares.contains(null)) {
+      _win = _checkWin();
+    }
     setState(() {});
   }
 
@@ -234,7 +255,14 @@ class _SudokuState extends State<Sudoku> {
       case "clear":
         _clearSquare();
         break;
+      case "undo":
+        _undo();
+        break;
+      case "redo":
+        _redo();
+        break;
       default:
+        print("invalid button press");
     }
   }
 
@@ -293,6 +321,7 @@ class _SudokuState extends State<Sudoku> {
 
     return Scaffold(
         appBar: MyAppBar(),
+        backgroundColor: Color(0xff272537),
         body: FutureBuilder<JsonObj>(
           future: futurePuzzleDetails,
           builder: (context, snapshot) {
@@ -308,12 +337,12 @@ class _SudokuState extends State<Sudoku> {
                       "Puzzle " + _puzzleId.toString(),
                       textAlign: TextAlign.center,
                       style:
-                          TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+                          TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white),
                     ),
                     Text(
                       "Difficulty: " + _difficulty,
                       textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 16),
+                      style: TextStyle(fontSize: 16, color: Colors.white30),
                     ),
                     SizedBox(height: (_win ? 10 : 0)),
                     _winStatement(),
@@ -327,14 +356,16 @@ class _SudokuState extends State<Sudoku> {
                     SizedBox(height: 24),
                     Controls(
                       controlHandler: _controlHandler,
+                      enableUndoBtn: (_move > 0),
+                      enableRedoBtn: (_move < _history.length - 1),
                     ),
                     SizedBox(height: 24),
                     Container(
                       child: Column(
                         children: [
-                          Text("time:"),
+                          Text("time:", style: TextStyle(color: Colors.white30),),
                           Text(formatTime(_stopwatch.elapsedMilliseconds),
-                              style: TextStyle(fontSize: 36))
+                              style: TextStyle(fontSize: 36, color: Colors.white30))
                         ],
                       ),
                     ),

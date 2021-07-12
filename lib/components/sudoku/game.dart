@@ -18,10 +18,10 @@ class Game extends StatelessWidget {
     Widget _square(int index) {
       final _boxSize = _width / 9 - 5;
       final squareColor = puzzleIndex.contains(index)
-          ? Colors.black26
+          ? Colors.white30
           : selectedSquare == index
               ? Colors.yellow
-              : Colors.white;
+              : Colors.white54;
       return GestureDetector(
         child: Container(
           width: _boxSize,
