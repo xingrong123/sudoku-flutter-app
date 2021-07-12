@@ -17,6 +17,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   List puzzlesCount = [];
+  List puzzleProgress = [];
   late Future<JsonObj> futurePuzzlesCount;
 
   Future<bool> _onBackPressed() async {
@@ -35,57 +36,49 @@ class _HomePageState extends State<HomePage> {
     return await showDialog(
           context: context,
           builder: (context) => new AlertDialog(
-            title: Text(MyCookie.getUsername(), style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                        )),
-            content: new Text('Do you want to logout', style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                        )),
+            title: Text(MyCookie.getUsername(),
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                )),
+            content: new Text('Do you want to logout?',
+                style: TextStyle(
+                  color: Colors.white54,
+                  fontSize: 16,
+                )),
             actions: <Widget>[
               GestureDetector(
                 onTap: () => Navigator.of(context).pop(false),
                 child: Container(
+                    decoration: BoxDecoration(
+                        color: Colors.black45,
+                        borderRadius: BorderRadius.all(Radius.circular(4))),
                     child: Text("NO",
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 20,
                         )),
-                    color: Colors.black45,
-                    padding: EdgeInsets.all(5)),
+                    padding: EdgeInsets.all(12)),
               ),
               SizedBox(width: 10),
               new GestureDetector(
                 onTap: () => _logout(),
                 child: Container(
-                    child: Text("LOGOUT", 
+                  decoration: BoxDecoration(
+                        color: Colors.black45,
+                        borderRadius: BorderRadius.all(Radius.circular(4))),
+                    child: Text("LOGOUT",
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 20,
                         )),
-                    color: Colors.black45,
-                    padding: EdgeInsets.all(5)),
+                    padding: EdgeInsets.all(12)),
               ),
             ],
             backgroundColor: Color(0xff272537),
-            
           ),
         ) ??
         false;
-  }
-
-  Widget _tableElementText(String value) {
-    return (Container(
-      child: Center(
-        child: Text(
-          value,
-          style: TextStyle(fontSize: 20, color: Colors.white),
-          textAlign: TextAlign.center,
-        ),
-      ),
-      height: 40,
-    ));
   }
 
   _onPressed(puzzleId) {
@@ -112,6 +105,9 @@ class _HomePageState extends State<HomePage> {
           builder: (context, snapshot) {
             if (snapshot.hasData) {
               puzzlesCount = snapshot.data!.data["puzzles"];
+              if (snapshot.data!.data["wins"] != null) {
+                puzzleProgress = snapshot.data!.data["wins"];
+              }
               return Column(
                 children: [
                   Container(
@@ -121,7 +117,11 @@ class _HomePageState extends State<HomePage> {
                   ),
                   //_createTable(),
                   Expanded(
-                    child: PuzzleList(puzzlesCount, _onPressed),
+                    child: PuzzleList(
+                      puzzlesCount: puzzlesCount,
+                      onPressed: _onPressed,
+                      puzzleProgress: puzzleProgress,
+                    ),
                   ),
                 ],
               );
@@ -141,24 +141,47 @@ class _HomePageState extends State<HomePage> {
 }
 
 class PuzzleList extends StatelessWidget {
-  final List _puzzlesCount;
-  final Function _onPressed;
+  final List puzzlesCount;
+  final Function onPressed;
+  final puzzleProgress;
   final TextStyle bigFont = TextStyle(fontSize: 20, color: Colors.white);
   final TextStyle bigFont2 = TextStyle(fontSize: 16, color: Colors.white);
 
-  PuzzleList(this._puzzlesCount, this._onPressed);
+  PuzzleList({
+    required this.puzzlesCount,
+    required this.onPressed,
+    required this.puzzleProgress,
+  });
 
-  Widget _buildRow(something) {
+  // can be improved by joining the query results of puzzleprogress and count
+  // together in the server side
+  // and loop through puzzle count to find puzzle id
+  getProgress(id) {
+    for (int i = 0; i < puzzleProgress.length; i++) {
+      if (puzzleProgress[i]["puzzle_id"] == id) {
+        if (puzzleProgress[i]["completed"]) {
+          return "completed in " + puzzleProgress[i]["time_spent"];
+        } else {
+          return "in progress";
+        }
+      }
+    }
+    return "unattempted";
+  }
+
+  Widget _buildRow(puzzleDetails) {
     return ListTile(
-      leading: Text(something["puzzle_id"].toString(), style: bigFont),
-      title: Text(something["difficulty"], style: bigFont),
-      subtitle: Text(
-        "something",
-        style: bigFont2,
-      ),
+      leading: Text(puzzleDetails["puzzle_id"].toString(), style: bigFont),
+      title: Text(puzzleDetails["difficulty"], style: bigFont),
+      subtitle: puzzleProgress.length != 0
+          ? Text(
+              getProgress(puzzleDetails["puzzle_id"]),
+              style: bigFont2,
+            )
+          : null,
       dense: true,
       onTap: () {
-        _onPressed(something["puzzle_id"]);
+        onPressed(puzzleDetails["puzzle_id"]);
       },
     );
   }
@@ -166,7 +189,7 @@ class PuzzleList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
-      itemCount: _puzzlesCount.length * 2,
+      itemCount: puzzlesCount.length * 2,
       itemBuilder: (context, i) {
         if (i.isOdd)
           return const Divider(
@@ -175,7 +198,7 @@ class PuzzleList extends StatelessWidget {
           );
 
         final index = i ~/ 2;
-        return _buildRow(_puzzlesCount[index]);
+        return _buildRow(puzzlesCount[index]);
       },
     );
   }
