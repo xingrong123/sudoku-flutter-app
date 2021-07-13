@@ -91,7 +91,7 @@ class _HomePageState extends State<HomePage> {
       avatar: CircleAvatar(
         backgroundColor: Colors.grey,
         child: selected
-            ? Icon(IconData(57686, fontFamily: 'MaterialIcons'))
+            ? Icon(const IconData(57686, fontFamily: 'MaterialIcons'))
             : Text(""),
       ),
       label: Text(content),
