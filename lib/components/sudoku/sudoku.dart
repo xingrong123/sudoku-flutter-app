@@ -9,6 +9,7 @@ import 'controls.dart';
 import '../../utils/screenArguments.dart';
 import '../../utils/sudokuApi.dart';
 import '../../utils/jsonObj.dart';
+import '../../logic/sudokuLogic.dart';
 
 class Sudoku extends StatefulWidget {
   static const routeName = '/sudoku';
@@ -30,74 +31,15 @@ class _SudokuState extends State<Sudoku> {
     }
   ];
   int _move = 0;
-  var startTime = {
-    "hours": 0,
-    "minutes": 0,
-    "seconds": 0,
-  };
-  var time = {
-    "hours": 0,
-    "minutes": 0,
-    "seconds": 0,
-  };
 
-  bool _initialized = false;
-  bool _initialized2 = false;
+  bool _isInitializedPhaseOne = false;
+  bool _isInitializedPhaseTwo = false;
   int _puzzleId = 0;
   String _difficulty = "";
   late Future<JsonObj> futurePuzzleDetails;
   int _startTimeInSeconds = 0;
   late Stopwatch _stopwatch;
   late Timer _timer;
-
-  int _calculateTimeInSecondsFromStringFormat(String time) {
-    print(time);
-    final timeArray = time.split(":");
-    int timeInSeconds = int.parse(timeArray[0]) * 3600 +
-        int.parse(timeArray[1]) * 60 +
-        int.parse(timeArray[2]);
-    return timeInSeconds;
-  }
-
-  String formatTime(int milliseconds) {
-    var secs = milliseconds ~/ 1000 + _startTimeInSeconds;
-    var hours = (secs ~/ 3600).toString().padLeft(2, '0');
-    var minutes = ((secs % 3600) ~/ 60).toString().padLeft(2, '0');
-    var seconds = (secs % 60).toString().padLeft(2, '0');
-    return "$hours:$minutes:$seconds";
-  }
-
-  bool _checkWin() {
-    List<List> check = [];
-    for (int i = 0; i < 9; i++) {
-      check.add(_squares.sublist(i * 9, i * 9 + 9));
-    }
-    for (int i = 0; i < 9; i++) {
-      List array = [];
-      for (int j = 0; j < 9; j++) {
-        array.add(_squares[j * 9 + i]);
-      }
-      check.add(array);
-    }
-    for (int i = 0; i < 3; i++) {
-      for (int j = 0; j < 3; j++) {
-        List array = [];
-        for (int k = 0; k < 3; k++) {
-          for (int m = 0; m < 3; m++) {
-            int index = (i * 3 + k) * 9 + (j * 3 + m);
-            array.add(_squares[index]);
-          }
-        }
-        check.add(array);
-      }
-    }
-    for (int i = 0; i < check.length; i++) {
-      for (int j = 1; j <= 9; j++) {
-        if (!check[i].contains(j)) return false;
-      }
-    }
-    return true;
-  }
 
   _deselectSquare() {
     setState(() {
@@ -118,7 +60,8 @@ class _SudokuState extends State<Sudoku> {
   _saveWinDetails() {
     final body = {
       "puzzle_id": _puzzleId,
-      "time_spent": formatTime(_stopwatch.elapsedMilliseconds)
+      "time_spent": SudokuLogic.formatTime(
+          _stopwatch.elapsedMilliseconds, _startTimeInSeconds)
     };
     SudokuApi.postRequest("/win", body).then((res) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -130,7 +73,7 @@ class _SudokuState extends State<Sudoku> {
     });
   }
 
-  _updateHistoryAndMoves(value) {
+  void _updateHistoryAndMoves(value) {
     _move++;
     _history = _history.sublist(0, _move);
     _history.add({
@@ -140,12 +83,12 @@ class _SudokuState extends State<Sudoku> {
     });
   }
 
-  _numberTap(value) {
+  void _setNumberOnSquareOnPress(value) {
     if (_selectedSquare == -1) return;
     if (_squares[_selectedSquare] == value) return;
     _updateHistoryAndMoves(value);
     _squares[_selectedSquare] = value;
-    _win = _checkWin();
+    _win = SudokuLogic.checkWin(_squares);
     if (_win && _stopwatch.isRunning) {
       _stopwatch.stop();
       _saveWinDetails();
@@ -155,7 +98,8 @@ class _SudokuState extends State<Sudoku> {
   }
 
   void _save() {
-    final something = formatTime(_stopwatch.elapsedMilliseconds);
+    final something = SudokuLogic.formatTime(
+        _stopwatch.elapsedMilliseconds, _startTimeInSeconds);
     print(something);
     final body = {
       "puzzle_id": _puzzleId,
@@ -184,11 +128,11 @@ class _SudokuState extends State<Sudoku> {
       _squares = res.data[0]["squares"];
       _move = res.data[0]["moves"];
       _history = historyList;
-      _startTimeInSeconds =
-          _calculateTimeInSecondsFromStringFormat(res.data[0]["time_spent"]);
+      _startTimeInSeconds = SudokuLogic.calculateTimeInSecondsFromStringFormat(
+          res.data[0]["time_spent"]);
 
       _stopwatch.reset();
-      _win = _checkWin();
+      _win = SudokuLogic.checkWin(_squares);
       if (_win && _stopwatch.isRunning) {
         _stopwatch.stop();
       } else if (!_win && !_stopwatch.isRunning) {
@@ -205,7 +149,7 @@ class _SudokuState extends State<Sudoku> {
     setState(() {});
   }
 
-  _clearSquare() {
+  void _clearSquareOnPress() {
     // no point clearing an empty square
     if (_squares[_selectedSquare] == null) return;
     _updateHistoryAndMoves(null);
@@ -213,27 +157,23 @@ class _SudokuState extends State<Sudoku> {
     setState(() {});
   }
 
-  _undo() {
+  void _undoOnPress() {
     final moveDetails = _history[_move];
     _squares[moveDetails["square"]] = moveDetails["previousState"];
     _move--;
-    if (!_squares.contains(null)) {
-      _win = _checkWin();
-    }
+    _win = SudokuLogic.checkWin(_squares);
     setState(() {});
   }
 
-  _redo() {
+  void _redoOnPress() {
     _move++;
     final moveDetails = _history[_move];
     _squares[moveDetails["square"]] = moveDetails["move"];
-    if (!_squares.contains(null)) {
-      _win = _checkWin();
-    }
+    _win = SudokuLogic.checkWin(_squares);
     setState(() {});
   }
 
-  _controlHandler(value) {
+  void _controlHandler(value) {
     switch (value) {
       case 1:
       case 2:
@@ -244,7 +184,7 @@ class _SudokuState extends State<Sudoku> {
       case 7:
       case 8:
       case 9:
-        _numberTap(value);
+        _setNumberOnSquareOnPress(value);
         break;
       case "save":
         _save();
@@ -253,29 +193,29 @@ class _SudokuState extends State<Sudoku> {
         _load();
         break;
       case "clear":
-        _clearSquare();
+        _clearSquareOnPress();
         break;
       case "undo":
-        _undo();
+        _undoOnPress();
         break;
       case "redo":
-        _redo();
+        _redoOnPress();
         break;
       default:
         print("invalid button press");
     }
   }
 
-  _initalize(props) {
+  _initalizePuzzleId(props) {
     setState(() {
-      _initialized = true;
-      _puzzleId = props['puzzleId'];
+      _isInitializedPhaseOne = true;
+      _puzzleId = props['puzzle_id'];
       futurePuzzleDetails =
           SudokuApi.getRequest("/puzzle/" + _puzzleId.toString());
     });
   }
 
-  _setFetchedData(data) {
+  void _setFetchedData(data) {
     final tempSquares = data["puzzle"];
     List<int> tempPuzzleIndex = [];
     for (int i = 0; i < 81; i++) {
@@ -286,10 +226,10 @@ class _SudokuState extends State<Sudoku> {
     _squares = tempSquares;
     _difficulty = data["difficulty"];
     _puzzleIndex = tempPuzzleIndex;
-    _initialized2 = true;
+    _isInitializedPhaseTwo = true;
   }
 
-  _winStatement() {
+  Widget _getWinStatement() {
     if (!_win) return SizedBox.shrink();
     return Text(
       "You Win!!",
@@ -317,7 +257,7 @@ class _SudokuState extends State<Sudoku> {
   @override
   Widget build(BuildContext context) {
     final args = ModalRoute.of(context)!.settings.arguments as ScreenArguments;
-    if (_initialized == false) _initalize(args.props);
+    if (_isInitializedPhaseOne == false) _initalizePuzzleId(args.props);
 
     return Scaffold(
         appBar: MyAppBar(),
@@ -326,7 +266,7 @@ class _SudokuState extends State<Sudoku> {
           builder: (context, snapshot) {
             if (snapshot.hasData) {
               final data = snapshot.data!.data;
-              if (_initialized2 == false) {
+              if (_isInitializedPhaseTwo == false) {
                 _setFetchedData(data);
               }
               return SingleChildScrollView(
@@ -335,8 +275,10 @@ class _SudokuState extends State<Sudoku> {
                     Text(
                       "Puzzle " + _puzzleId.toString(),
                       textAlign: TextAlign.center,
-                      style:
-                          TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white),
+                      style: TextStyle(
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white),
                     ),
                     Text(
                       "Difficulty: " + _difficulty,
@@ -344,7 +286,7 @@ class _SudokuState extends State<Sudoku> {
                       style: TextStyle(fontSize: 16, color: Colors.white30),
                     ),
                     SizedBox(height: (_win ? 10 : 0)),
-                    _winStatement(),
+                    _getWinStatement(),
                     SizedBox(height: 10),
                     Game(
                       selectedSquare: _selectedSquare,
@@ -362,9 +304,16 @@ class _SudokuState extends State<Sudoku> {
                     Container(
                       child: Column(
                         children: [
-                          Text("time:", style: TextStyle(color: Colors.white30),),
-                          Text(formatTime(_stopwatch.elapsedMilliseconds),
-                              style: TextStyle(fontSize: 36, color: Colors.white30))
+                          Text(
+                            "time:",
+                            style: TextStyle(color: Colors.white30),
+                          ),
+                          Text(
+                              SudokuLogic.formatTime(
+                                  _stopwatch.elapsedMilliseconds,
+                                  _startTimeInSeconds),
+                              style: TextStyle(
+                                  fontSize: 36, color: Colors.white30))
                         ],
                       ),
                     ),

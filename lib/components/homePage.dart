@@ -113,7 +113,7 @@ class _HomePageState extends State<HomePage> {
 
   _puzzleOnPressed(puzzleId) {
     final props = {
-      "puzzleId": puzzleId,
+      "puzzle_id": puzzleId,
     };
     Navigator.pushNamed(context, '/sudoku', arguments: ScreenArguments(props));
   }
