@@ -70,6 +70,13 @@ class _RegisterPageState extends State<RegisterPage> {
             key: _formKey,
             child: Column(
               children: [
+                SizedBox(height: 30),
+                Text(
+                  "Register",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.white, fontSize: 24),
+                ),
+                SizedBox(height: 30),
                 Container(
                   child: TextFormField(
                     validator: (value) {
@@ -85,7 +92,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     style: TextStyle(color: Colors.white, fontSize: 20),
                     enabled: _enabled,
                   ),
-                  margin: EdgeInsets.fromLTRB(20, 30, 20, 0),
+                  margin: EdgeInsets.fromLTRB(20, 0, 20, 0),
                   padding: EdgeInsets.symmetric(vertical: 0, horizontal: 15),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.all(
@@ -94,6 +101,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     color: Colors.black26,
                   ),
                 ),
+                SizedBox(height: 30),
                 Container(
                   child: TextFormField(
                     validator: (value) {
@@ -110,7 +118,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     obscureText: true,
                     enabled: _enabled,
                   ),
-                  margin: EdgeInsets.fromLTRB(20, 30, 20, 0),
+                  margin: EdgeInsets.fromLTRB(20, 0, 20, 0),
                   padding: EdgeInsets.symmetric(vertical: 0, horizontal: 15),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.all(
@@ -129,7 +137,6 @@ class _RegisterPageState extends State<RegisterPage> {
           ),
         ),
       ),
-      backgroundColor: Color(0xff272537),
     );
   }
 }

@@ -85,7 +85,6 @@ class StartPage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.center,
         ),
       ),
-      backgroundColor: Color(0xff272537),
     );
   }
 }

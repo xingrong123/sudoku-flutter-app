@@ -16,9 +16,21 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  List puzzlesCount = [];
+  List allPuzzles = [];
   List puzzleProgress = [];
-  late Future<JsonObj> futurePuzzlesCount;
+  late Future<JsonObj> futureAllPuzzles;
+  bool _filtersIsExpanded = false;
+  Map<String, bool> filters = {
+    "easy": true,
+    "medium": true,
+    "hard": true,
+    "expert": true,
+    "unattempted": true,
+    "in progress": true,
+    "completed": true,
+  };
+
+  final TextStyle _font16White = TextStyle(color: Colors.white, fontSize: 16);
 
   Future<bool> _onBackPressed() async {
     _logout() {
@@ -31,6 +43,22 @@ class _HomePageState extends State<HomePage> {
       }();
       Authentication.isAuthenticated = false;
       Navigator.of(context).pop(true);
+    }
+
+    Widget _okAndLogoutBtn(text, onPress) {
+      return GestureDetector(
+        onTap: () => onPress(),
+        child: Container(
+            decoration: BoxDecoration(
+                color: Colors.black45,
+                borderRadius: BorderRadius.all(Radius.circular(4))),
+            child: Text(text,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                )),
+            padding: EdgeInsets.all(12)),
+      );
     }
 
     return await showDialog(
@@ -47,33 +75,9 @@ class _HomePageState extends State<HomePage> {
                   fontSize: 16,
                 )),
             actions: <Widget>[
-              GestureDetector(
-                onTap: () => Navigator.of(context).pop(false),
-                child: Container(
-                    decoration: BoxDecoration(
-                        color: Colors.black45,
-                        borderRadius: BorderRadius.all(Radius.circular(4))),
-                    child: Text("NO",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                        )),
-                    padding: EdgeInsets.all(12)),
-              ),
+              _okAndLogoutBtn("NO", () => Navigator.of(context).pop(false)),
               SizedBox(width: 10),
-              new GestureDetector(
-                onTap: () => _logout(),
-                child: Container(
-                  decoration: BoxDecoration(
-                        color: Colors.black45,
-                        borderRadius: BorderRadius.all(Radius.circular(4))),
-                    child: Text("LOGOUT",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                        )),
-                    padding: EdgeInsets.all(12)),
-              ),
+              _okAndLogoutBtn("LOGOUT", () => _logout()),
             ],
             backgroundColor: Color(0xff272537),
           ),
@@ -81,17 +85,67 @@ class _HomePageState extends State<HomePage> {
         false;
   }
 
-  _onPressed(puzzleId) {
+  Widget _buildFilterActionChip(content, enabled) {
+    final bool selected = filters[content] as bool;
+    return ActionChip(
+      avatar: CircleAvatar(
+        backgroundColor: Colors.grey,
+        child: selected
+            ? Icon(IconData(57686, fontFamily: 'MaterialIcons'))
+            : Text(""),
+      ),
+      label: Text(content),
+      onPressed: () {
+        if (enabled) {
+          _toggleFilter(content);
+        }
+      },
+      backgroundColor:
+          enabled ? (selected ? Colors.blue : Colors.red) : Colors.grey,
+    );
+  }
+
+  _toggleFilter(content) {
+    setState(() {
+      filters[content] = !(filters[content] as bool);
+    });
+  }
+
+  _puzzleOnPressed(puzzleId) {
     final props = {
       "puzzleId": puzzleId,
     };
     Navigator.pushNamed(context, '/sudoku', arguments: ScreenArguments(props));
   }
 
+  // can be improved by joining the query results of puzzleprogress and count
+  // together in the server side
+  // and loop through puzzle count to find puzzle id
+  String _getProgress(id, bool withTime) {
+    for (int i = 0; i < puzzleProgress.length; i++) {
+      if (puzzleProgress[i]["puzzle_id"] == id) {
+        if (puzzleProgress[i]["completed"]) {
+          return "completed" + (withTime ? " in " + puzzleProgress[i]["time_spent"] : "");
+        } else {
+          return "in progress";
+        }
+      }
+    }
+    return "unattempted";
+  }
+
+  _puzzleFilter() {
+    return allPuzzles
+        .where((element) =>
+            filters[element["difficulty"] as String] == true &&
+            filters[_getProgress(element["puzzle_id"], false)] == true)
+        .toList();
+  }
+
   @override
   void initState() {
     super.initState();
-    futurePuzzlesCount = SudokuApi.getRequest("/puzzlesCount");
+    futureAllPuzzles = SudokuApi.getRequest("/puzzlesCount");
   }
 
   @override
@@ -100,11 +154,80 @@ class _HomePageState extends State<HomePage> {
       onWillPop: Authentication.isAuthenticated ? _onBackPressed : null,
       child: new Scaffold(
         appBar: MyAppBar(),
+        endDrawer: Drawer(
+          child: ListView(
+            padding: EdgeInsets.zero,
+            children: <Widget>[
+              DrawerHeader(
+                decoration: BoxDecoration(
+                  color: Colors.black45,
+                ),
+                child: Center(
+                    child: CircleAvatar(
+                  child: Text(
+                      MyCookie.getUsername() != null
+                          ? MyCookie.getUsername()
+                          : "no user",
+                      style: TextStyle(color: Color(0xff272537), fontSize: 24)),
+                  radius: 64,
+                  backgroundColor: Colors.blueAccent,
+                )),
+              ),
+              ListTile(
+                leading: Icon(Icons.account_circle, color: Colors.white54),
+                title: Text(
+                  'Profile',
+                  style: _font16White,
+                ),
+              ),
+              ListTile(
+                leading: Icon(Icons.settings, color: Colors.white54),
+                title: Text(
+                  'Settings',
+                  style: _font16White,
+                ),
+              ),
+              ExpansionPanelList(
+                expansionCallback: (index, isExpanded) => setState(() {
+                  _filtersIsExpanded = !isExpanded;
+                }),
+                children: [
+                  ExpansionPanel(
+                    body: Wrap(
+                      children: [
+                        _buildFilterActionChip("easy", true),
+                        _buildFilterActionChip("medium", true),
+                        _buildFilterActionChip("hard", true),
+                        _buildFilterActionChip("expert", true),
+                        _buildFilterActionChip(
+                            "unattempted", Authentication.isAuthenticated),
+                        _buildFilterActionChip(
+                            "in progress", Authentication.isAuthenticated),
+                        _buildFilterActionChip("completed", Authentication.isAuthenticated),
+                      ],
+                    ),
+                    headerBuilder: (_, isExpanded) {
+                      return Center(
+                        child: Text(
+                          "Filters",
+                          style: _font16White,
+                        ),
+                      );
+                    },
+                    isExpanded: _filtersIsExpanded,
+                    backgroundColor: Color(0xff272537),
+                    canTapOnHeader: true,
+                  )
+                ],
+              ),
+            ],
+          ),
+        ),
         body: FutureBuilder<JsonObj>(
-          future: futurePuzzlesCount,
+          future: futureAllPuzzles,
           builder: (context, snapshot) {
             if (snapshot.hasData) {
-              puzzlesCount = snapshot.data!.data["puzzles"];
+              allPuzzles = snapshot.data!.data["puzzles"];
               if (snapshot.data!.data["wins"] != null) {
                 puzzleProgress = snapshot.data!.data["wins"];
               }
@@ -115,11 +238,10 @@ class _HomePageState extends State<HomePage> {
                         style: TextStyle(fontSize: 24, color: Colors.white)),
                     margin: EdgeInsets.all(16),
                   ),
-                  //_createTable(),
                   Expanded(
                     child: PuzzleList(
-                      puzzlesCount: puzzlesCount,
-                      onPressed: _onPressed,
+                      puzzles: _puzzleFilter(),
+                      onPressed: _puzzleOnPressed,
                       puzzleProgress: puzzleProgress,
                     ),
                   ),
@@ -134,29 +256,26 @@ class _HomePageState extends State<HomePage> {
             );
           },
         ),
-        backgroundColor: Color(0xff272537),
       ),
     );
   }
 }
 
 class PuzzleList extends StatelessWidget {
-  final List puzzlesCount;
+  final List puzzles;
   final Function onPressed;
   final puzzleProgress;
   final TextStyle bigFont = TextStyle(fontSize: 20, color: Colors.white);
   final TextStyle bigFont2 = TextStyle(fontSize: 16, color: Colors.white);
 
   PuzzleList({
-    required this.puzzlesCount,
+    required this.puzzles,
     required this.onPressed,
     required this.puzzleProgress,
   });
 
-  // can be improved by joining the query results of puzzleprogress and count
-  // together in the server side
-  // and loop through puzzle count to find puzzle id
-  getProgress(id) {
+
+  _getProgress(id) {
     for (int i = 0; i < puzzleProgress.length; i++) {
       if (puzzleProgress[i]["puzzle_id"] == id) {
         if (puzzleProgress[i]["completed"]) {
@@ -175,7 +294,7 @@ class PuzzleList extends StatelessWidget {
       title: Text(puzzleDetails["difficulty"], style: bigFont),
       subtitle: puzzleProgress.length != 0
           ? Text(
-              getProgress(puzzleDetails["puzzle_id"]),
+              _getProgress(puzzleDetails["puzzle_id"]),
               style: bigFont2,
             )
           : null,
@@ -189,7 +308,7 @@ class PuzzleList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
-      itemCount: puzzlesCount.length * 2,
+      itemCount: puzzles.length * 2,
       itemBuilder: (context, i) {
         if (i.isOdd)
           return const Divider(
@@ -198,7 +317,7 @@ class PuzzleList extends StatelessWidget {
           );
 
         final index = i ~/ 2;
-        return _buildRow(puzzlesCount[index]);
+        return _buildRow(puzzles[index]);
       },
     );
   }

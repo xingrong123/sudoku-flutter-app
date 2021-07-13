@@ -19,6 +19,7 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      theme: ThemeData(canvasColor: Color(0xff272537)),
       title: "Sudoku App",
       initialRoute: '/',
       routes: {

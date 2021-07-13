@@ -75,6 +75,9 @@ class _LoginPageState extends State<LoginPage> {
             key: _formKey,
             child: Column(
               children: [
+                SizedBox(height: 30),
+                Text("Login", textAlign: TextAlign.center, style: TextStyle(color: Colors.white, fontSize: 24),),
+                SizedBox(height: 30),
                 Container(
                   child: TextFormField(
                     validator: (value) {
@@ -92,7 +95,7 @@ class _LoginPageState extends State<LoginPage> {
                     style: TextStyle(color: Colors.white, fontSize: 20),
                     enabled: _enabled,
                   ),
-                  margin: EdgeInsets.fromLTRB(20, 30, 20, 0),
+                  margin: EdgeInsets.fromLTRB(20, 0, 20, 0),
                   padding: EdgeInsets.symmetric(vertical: 0, horizontal: 15),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.all(
@@ -101,6 +104,7 @@ class _LoginPageState extends State<LoginPage> {
                     color: Colors.black26,
                   ),
                 ),
+                SizedBox(height: 30),
                 Container(
                   child: TextFormField(
                     validator: (value) {
@@ -119,7 +123,7 @@ class _LoginPageState extends State<LoginPage> {
                     obscureText: true,
                     enabled: _enabled,
                   ),
-                  margin: EdgeInsets.fromLTRB(20, 30, 20, 0),
+                  margin: EdgeInsets.fromLTRB(20, 0, 20, 0),
                   padding: EdgeInsets.symmetric(vertical: 0, horizontal: 15),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.all(
@@ -138,7 +142,6 @@ class _LoginPageState extends State<LoginPage> {
           ),
         ),
       ),
-      backgroundColor: Color(0xff272537),
     );
   }
 }

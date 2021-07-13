@@ -321,7 +321,6 @@ class _SudokuState extends State<Sudoku> {
 
     return Scaffold(
         appBar: MyAppBar(),
-        backgroundColor: Color(0xff272537),
         body: FutureBuilder<JsonObj>(
           future: futurePuzzleDetails,
           builder: (context, snapshot) {
