@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:sudoku_app/components/sudoku/commentSection.dart';
 import 'package:sudoku_app/components/sudoku/starRatings.dart';
 import 'dart:async';
 
@@ -330,6 +331,8 @@ class _SudokuState extends State<Sudoku> {
                       avgRating: _avgRating,
                       puzzleId: _puzzleId,
                     ),
+                    SizedBox(height: 24),
+                    CommentSection(comments: _comments),
                   ],
                 ),
               );
