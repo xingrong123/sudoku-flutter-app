@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:sudoku_app/components/sudoku/commentBox.dart';
 
 class CommentSection extends StatelessWidget {
   final comments;
   CommentSection({required this.comments});
 
-  List buildCommentTree(List comments, parentId) {
+  static List buildCommentTree(List comments, parentId) {
     var output = [];
     for (int i = 0; i < comments.length; i++) {
       var comment = comments[i];
@@ -16,18 +17,18 @@ class CommentSection extends StatelessWidget {
     return output;
   }
 
-  Widget buildFirstLayerComment(comment) {
-    return Text(comment["username"] + "  " + comment["comment"]);
+  static Widget buildFirstLayerComment(comment) {
+    return CommentBox(comment: comment);
   }
 
-  List<Widget> buildOtherLayerComment(comment, parentUser) {
+  static List<Widget> buildOtherLayerComment(comment, parentUser) {
     if ((comment.children as List).length == 0) {
-    return [Text("something")];
+    return [CommentBox(comment: comment)];
     }
     List<Widget> output = [];
     if (parentUser != null) {
       output.add(
-        Text("something")
+        CommentBox(comment: comment)
       );
     }
     for (int i = 0; i < (comment["children"] as List).length; i++) {
@@ -36,7 +37,7 @@ class CommentSection extends StatelessWidget {
     return output;
   }
 
-  List<Widget> buildCommentWidgetList(List commentTree) {
+  static List<Widget> buildCommentWidgetList(List commentTree) {
     List<Widget> output = [];
     for (int i = 0; i < commentTree.length; i++) {
       output.add(buildFirstLayerComment(commentTree[i]));
@@ -49,12 +50,12 @@ class CommentSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final commentsInTreeForm = buildCommentTree(comments, null);
-    final commentsWidgetList = buildCommentWidgetList(commentsInTreeForm);
+    // final commentsInTreeForm = buildCommentTree(comments, null);
+    // final commentsWidgetList = buildCommentWidgetList(commentsInTreeForm);
 
     return Container(
       child: Column(
-        children: commentsWidgetList,
+        children: comments,
       ),
     );
   }

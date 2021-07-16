@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:sudoku_app/components/sudoku/commentForm.dart';
 import 'package:sudoku_app/components/sudoku/commentSection.dart';
 import 'package:sudoku_app/components/sudoku/starRatings.dart';
 import 'dart:async';
@@ -102,15 +103,15 @@ class _SudokuState extends State<Sudoku> {
   }
 
   void _save() {
-    final something = SudokuLogic.formatTime(
+    final timeSpent = SudokuLogic.formatTime(
         _stopwatch.elapsedMilliseconds, _startTimeInSeconds);
-    print(something);
+    print(timeSpent);
     final body = {
       "puzzle_id": _puzzleId,
       "moves": _move,
       "squares": [..._squares],
       "history": [..._history],
-      "time_spent": something
+      "time_spent": timeSpent
     };
     SudokuApi.postRequest("/save", body).then((res) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -219,6 +220,12 @@ class _SudokuState extends State<Sudoku> {
     });
   }
 
+  _setComments(comments) {
+    setState(() {
+      _comments = comments;
+    });
+  }
+
   void _setFetchedData(data) {
     print(data["puzzle"][0]);
     print(data["comments"]);
@@ -233,8 +240,9 @@ class _SudokuState extends State<Sudoku> {
     _difficulty = data["puzzle"][0]["difficulty"];
     _puzzleIndex = tempPuzzleIndex;
     _avgRating = (data["puzzle"][0]["avg_rating"] as int).toDouble();
-    print(_avgRating.runtimeType);
-    _comments = data["comments"];
+    final commentsInTreeForm =
+        CommentSection.buildCommentTree(data["comments"], null);
+    _comments = CommentSection.buildCommentWidgetList(commentsInTreeForm);
     _isInitializedPhaseTwo = true;
   }
 
@@ -330,6 +338,11 @@ class _SudokuState extends State<Sudoku> {
                     StarRating(
                       avgRating: _avgRating,
                       puzzleId: _puzzleId,
+                    ),
+                    SizedBox(height: 24),
+                    CommentForm(
+                      puzzleId: _puzzleId,
+                      setComments: (comments) => _setComments(comments),
                     ),
                     SizedBox(height: 24),
                     CommentSection(comments: _comments),
