@@ -26,6 +26,24 @@ class StartPage extends StatelessWidget {
       );
     }
 
+    Widget _button(text, onClick) {
+      return ElevatedButton(
+        onPressed: () => onClick(),
+        child: Container(
+          child: Center(
+            child: Text(text,
+                style: TextStyle(color: Colors.white, fontSize: 20),
+                textAlign: TextAlign.center),
+          ),
+          height: 40,
+          width: 80,
+        ),
+        style: ElevatedButton.styleFrom(
+          primary: Colors.black45,
+        ),
+      );
+    }
+
     return Scaffold(
       body: Center(
         child: Column(
@@ -33,53 +51,11 @@ class StartPage extends StatelessWidget {
             Text("Welcome",
                 style: TextStyle(color: Colors.white, fontSize: 32)),
             SizedBox(height: 30),
-            ElevatedButton(
-              onPressed: () => _onPressedRegister(),
-              child: Container(
-                child: Center(
-                  child: Text("register",
-                      style: TextStyle(color: Colors.white, fontSize: 20),
-                      textAlign: TextAlign.center),
-                ),
-                height: 40,
-                width: 80,
-              ),
-              style: ElevatedButton.styleFrom(
-                primary: Colors.black45,
-              ),
-            ),
+            _button("register", () => _onPressedRegister()),
             SizedBox(height: 30),
-            ElevatedButton(
-              onPressed: () => _onPressedLogin(),
-              child: Container(
-                child: Center(
-                  child: Text("login",
-                      style: TextStyle(color: Colors.white, fontSize: 20),
-                      textAlign: TextAlign.center),
-                ),
-                height: 40,
-                width: 80,
-              ),
-              style: ElevatedButton.styleFrom(
-                primary: Colors.black45,
-              ),
-            ),
+            _button("login", () => _onPressedLogin()),
             SizedBox(height: 30),
-            ElevatedButton(
-              onPressed: () => _onPressedSkip(),
-              child: Container(
-                child: Center(
-                  child: Text("skip",
-                      style: TextStyle(color: Colors.white, fontSize: 20),
-                      textAlign: TextAlign.center),
-                ),
-                height: 40,
-                width: 80,
-              ),
-              style: ElevatedButton.styleFrom(
-                primary: Colors.black45,
-              ),
-            ),
+            _button("skip", () => _onPressedSkip()),
           ],
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,

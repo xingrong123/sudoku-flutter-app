@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:sudoku_app/components/sudoku/starRatings.dart';
 import 'dart:async';
 
 import '../myAppBar.dart';
@@ -36,10 +37,12 @@ class _SudokuState extends State<Sudoku> {
   bool _isInitializedPhaseTwo = false;
   int _puzzleId = 0;
   String _difficulty = "";
+  double _avgRating = 0;
   late Future<JsonObj> futurePuzzleDetails;
   int _startTimeInSeconds = 0;
   late Stopwatch _stopwatch;
   late Timer _timer;
+  List _comments = [];
 
   _deselectSquare() {
     setState(() {
@@ -216,7 +219,9 @@ class _SudokuState extends State<Sudoku> {
   }
 
   void _setFetchedData(data) {
-    final tempSquares = data["puzzle"];
+    print(data["puzzle"][0]);
+    print(data["comments"]);
+    final tempSquares = data["puzzle"][0]["puzzle"];
     List<int> tempPuzzleIndex = [];
     for (int i = 0; i < 81; i++) {
       if (tempSquares[i] != null) {
@@ -224,8 +229,11 @@ class _SudokuState extends State<Sudoku> {
       }
     }
     _squares = tempSquares;
-    _difficulty = data["difficulty"];
+    _difficulty = data["puzzle"][0]["difficulty"];
     _puzzleIndex = tempPuzzleIndex;
+    _avgRating = (data["puzzle"][0]["avg_rating"] as int).toDouble();
+    print(_avgRating.runtimeType);
+    _comments = data["comments"];
     _isInitializedPhaseTwo = true;
   }
 
@@ -317,13 +325,17 @@ class _SudokuState extends State<Sudoku> {
                         ],
                       ),
                     ),
+                    SizedBox(height: 24),
+                    StarRating(
+                      avgRating: _avgRating,
+                      puzzleId: _puzzleId,
+                    ),
                   ],
                 ),
               );
             } else if (snapshot.hasError) {
               return Text("${snapshot.error}");
             }
-
             // By default, show a loading spinner.
             return Center(
               child: CircularProgressIndicator(),

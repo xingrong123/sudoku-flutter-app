@@ -145,7 +145,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    futureAllPuzzles = SudokuApi.getRequest("/puzzlesCount");
+    futureAllPuzzles = SudokuApi.getRequest("/puzzles");
   }
 
   @override
@@ -228,8 +228,8 @@ class _HomePageState extends State<HomePage> {
           builder: (context, snapshot) {
             if (snapshot.hasData) {
               allPuzzles = snapshot.data!.data["puzzles"];
-              if (snapshot.data!.data["wins"] != null) {
-                puzzleProgress = snapshot.data!.data["wins"];
+              if (snapshot.data!.data["progress"] != null) {
+                puzzleProgress = snapshot.data!.data["progress"];
               }
               return Column(
                 children: [
