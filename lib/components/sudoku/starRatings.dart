@@ -22,7 +22,6 @@ class StarRating extends StatelessWidget {
       "rating": rating,
     };
     SudokuApi.postRequest("/rate", body).then((res) {
-      print("rate success. " + res.data.toString());
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text('rated successfully'),
         duration: Duration(seconds: 3),
@@ -44,10 +43,10 @@ class StarRating extends StatelessWidget {
           allowHalfRating: true,
           itemCount: 5,
           ratingWidget: RatingWidget(
-            full: Icon(IconData(62432, fontFamily: 'MaterialIcons')),
-            half: Icon(IconData(62430,
+            full: const Icon(IconData(62432, fontFamily: 'MaterialIcons')),
+            half: const Icon(IconData(62430,
                 fontFamily: 'MaterialIcons', matchTextDirection: true)),
-            empty: Icon(IconData(62428, fontFamily: 'MaterialIcons')),
+            empty: const Icon(IconData(62428, fontFamily: 'MaterialIcons')),
           ),
           itemPadding: EdgeInsets.symmetric(horizontal: 4.0),
           onRatingUpdate: (rating) {

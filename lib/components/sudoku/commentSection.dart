@@ -17,42 +17,59 @@ class CommentSection extends StatelessWidget {
     return output;
   }
 
-  static Widget buildFirstLayerComment(comment) {
-    return CommentBox(comment: comment);
+  static Widget buildFirstLayerComment(
+      comment, puzzleId, Function setComments) {
+    return CommentBox(
+        comment: comment, puzzleId: puzzleId, setComments: setComments);
   }
 
-  static List<Widget> buildOtherLayerComment(comment, parentUser) {
-    if ((comment.children as List).length == 0) {
-    return [CommentBox(comment: comment)];
+  static List<Widget> buildOtherLayerComment(
+      comment, parentUser, puzzleId, Function setComments) {
+    if ((comment["children"] as List).length == 0) {
+      return [
+        CommentBox(
+          comment: comment,
+          puzzleId: puzzleId,
+          setComments: setComments,
+          parentUser: parentUser,
+        )
+      ];
     }
     List<Widget> output = [];
     if (parentUser != null) {
-      output.add(
-        CommentBox(comment: comment)
-      );
+      output.add(CommentBox(
+        comment: comment,
+        puzzleId: puzzleId,
+        setComments: setComments,
+        parentUser: parentUser,
+      ));
     }
     for (int i = 0; i < (comment["children"] as List).length; i++) {
-      output.addAll(buildOtherLayerComment(comment["children"][i], comment["username"]));
+      output.addAll(buildOtherLayerComment(
+          comment["children"][i], comment["username"], puzzleId, setComments));
     }
     return output;
   }
 
-  static List<Widget> buildCommentWidgetList(List commentTree) {
+  static List<Widget> buildCommentWidgetList(
+      List commentTree, puzzleId, Function setComments) {
     List<Widget> output = [];
     for (int i = 0; i < commentTree.length; i++) {
-      output.add(buildFirstLayerComment(commentTree[i]));
+      output.add(buildFirstLayerComment(commentTree[i], puzzleId, setComments));
       if ((commentTree[i]["children"] as List).length != 0) {
-        output.addAll(buildOtherLayerComment(commentTree[i], null));
+        output.addAll(buildOtherLayerComment(
+          commentTree[i],
+          null,
+          puzzleId,
+          setComments,
+        ));
       }
     }
-    return output.reversed.toList();
+    return output;
   }
 
   @override
   Widget build(BuildContext context) {
-    // final commentsInTreeForm = buildCommentTree(comments, null);
-    // final commentsWidgetList = buildCommentWidgetList(commentsInTreeForm);
-
     return Container(
       child: Column(
         children: comments,

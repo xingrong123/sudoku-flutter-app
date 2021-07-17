@@ -26,6 +26,7 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   _onPressHandler() async {
+    FocusManager.instance.primaryFocus?.unfocus();
     setState(() {
       _enabled = false;
     });
@@ -61,77 +62,82 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: MyAppBar(),
-      body: Center(
-        child: Container(
-          child: Form(
-            key: _formKey,
-            child: Column(
-              children: [
-                SizedBox(height: 30),
-                Text(
-                  "Register",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.white, fontSize: 24),
-                ),
-                SizedBox(height: 30),
-                Container(
-                  child: TextFormField(
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter username';
-                      }
-                      return null;
-                    },
-                    controller: myUsernameController,
-                    decoration: InputDecoration(
-                        hintText: "Username",
-                        hintStyle: TextStyle(color: Colors.grey, fontSize: 20)),
-                    style: TextStyle(color: Colors.white, fontSize: 20),
-                    enabled: _enabled,
+    return GestureDetector(
+      onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+      child: Scaffold(
+        appBar: MyAppBar(),
+        body: Center(
+          child: Container(
+            child: Form(
+              key: _formKey,
+              child: Column(
+                children: [
+                  SizedBox(height: 30),
+                  Text(
+                    "Register",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: Colors.white, fontSize: 24),
                   ),
-                  margin: EdgeInsets.fromLTRB(20, 0, 20, 0),
-                  padding: EdgeInsets.symmetric(vertical: 0, horizontal: 15),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.all(
-                      Radius.circular(4),
+                  SizedBox(height: 30),
+                  Container(
+                    child: TextFormField(
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter username';
+                        }
+                        return null;
+                      },
+                      controller: myUsernameController,
+                      decoration: InputDecoration(
+                          hintText: "Username",
+                          hintStyle:
+                              TextStyle(color: Colors.grey, fontSize: 20)),
+                      style: TextStyle(color: Colors.white, fontSize: 20),
+                      enabled: _enabled,
                     ),
-                    color: Colors.black26,
-                  ),
-                ),
-                SizedBox(height: 30),
-                Container(
-                  child: TextFormField(
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter password';
-                      }
-                      return null;
-                    },
-                    controller: myPasswordController,
-                    decoration: InputDecoration(
-                        hintText: "Password",
-                        hintStyle: TextStyle(color: Colors.grey, fontSize: 20)),
-                    style: TextStyle(color: Colors.white, fontSize: 20),
-                    obscureText: true,
-                    enabled: _enabled,
-                  ),
-                  margin: EdgeInsets.fromLTRB(20, 0, 20, 0),
-                  padding: EdgeInsets.symmetric(vertical: 0, horizontal: 15),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.all(
-                      Radius.circular(4),
+                    margin: EdgeInsets.fromLTRB(20, 0, 20, 0),
+                    padding: EdgeInsets.symmetric(vertical: 0, horizontal: 15),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.all(
+                        Radius.circular(4),
+                      ),
+                      color: Colors.black26,
                     ),
-                    color: Colors.black26,
                   ),
-                ),
-                SizedBox(height: 30),
-                ElevatedButton(
-                  onPressed: _enabled ? () => _onPressHandler() : null,
-                  child: Text('Submit'),
-                )
-              ],
+                  SizedBox(height: 30),
+                  Container(
+                    child: TextFormField(
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter password';
+                        }
+                        return null;
+                      },
+                      controller: myPasswordController,
+                      decoration: InputDecoration(
+                          hintText: "Password",
+                          hintStyle:
+                              TextStyle(color: Colors.grey, fontSize: 20)),
+                      style: TextStyle(color: Colors.white, fontSize: 20),
+                      obscureText: true,
+                      enabled: _enabled,
+                    ),
+                    margin: EdgeInsets.fromLTRB(20, 0, 20, 0),
+                    padding: EdgeInsets.symmetric(vertical: 0, horizontal: 15),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.all(
+                        Radius.circular(4),
+                      ),
+                      color: Colors.black26,
+                    ),
+                  ),
+                  SizedBox(height: 30),
+                  ElevatedButton(
+                    onPressed: _enabled ? () => _onPressHandler() : null,
+                    child: Text('Submit'),
+                  )
+                ],
+              ),
             ),
           ),
         ),

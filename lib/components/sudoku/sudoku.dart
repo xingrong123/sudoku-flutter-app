@@ -105,7 +105,6 @@ class _SudokuState extends State<Sudoku> {
   void _save() {
     final timeSpent = SudokuLogic.formatTime(
         _stopwatch.elapsedMilliseconds, _startTimeInSeconds);
-    print(timeSpent);
     final body = {
       "puzzle_id": _puzzleId,
       "moves": _move,
@@ -242,7 +241,8 @@ class _SudokuState extends State<Sudoku> {
     _avgRating = (data["puzzle"][0]["avg_rating"] as int).toDouble();
     final commentsInTreeForm =
         CommentSection.buildCommentTree(data["comments"], null);
-    _comments = CommentSection.buildCommentWidgetList(commentsInTreeForm);
+    _comments = CommentSection.buildCommentWidgetList(
+        commentsInTreeForm, _puzzleId, (c) => _setComments(c));
     _isInitializedPhaseTwo = true;
   }
 
@@ -276,7 +276,9 @@ class _SudokuState extends State<Sudoku> {
     final args = ModalRoute.of(context)!.settings.arguments as ScreenArguments;
     if (_isInitializedPhaseOne == false) _initalizePuzzleId(args.props);
 
-    return Scaffold(
+    return GestureDetector(
+      onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+      child: Scaffold(
         appBar: MyAppBar(),
         body: FutureBuilder<JsonObj>(
           future: futurePuzzleDetails,
@@ -342,7 +344,7 @@ class _SudokuState extends State<Sudoku> {
                     SizedBox(height: 24),
                     CommentForm(
                       puzzleId: _puzzleId,
-                      setComments: (comments) => _setComments(comments),
+                      setComments: _setComments,
                     ),
                     SizedBox(height: 24),
                     CommentSection(comments: _comments),
@@ -357,6 +359,8 @@ class _SudokuState extends State<Sudoku> {
               child: CircularProgressIndicator(),
             );
           },
-        ));
+        ),
+      ),
+    );
   }
 }
